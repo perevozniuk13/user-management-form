@@ -1,5 +1,4 @@
 export function validate(key: string, input: string | number| Date | null | undefined) {
-    console.log("keyyy", key)
     if (!input || /^ *$/.test(input as string)) {
         return '* Required'
     } 

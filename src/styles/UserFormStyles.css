@@ -11,15 +11,13 @@
     min-height: 100vh;
 }
 
+.section-header {
+    display: flex;
+    align-items: center;
+    margin: 15px 0;
+}
+
 .form-section {
-    width: 100%;
-}
-
-.left-container {
-    width: 100%;
-}
-
-.right-container {
     width: 100%;
 }
 

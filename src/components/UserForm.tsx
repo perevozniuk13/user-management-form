@@ -1,3 +1,5 @@
+import { FormEvent, useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import '../styles/UserFormStyles.css';
 
 import { Button } from 'primereact/button';    
@@ -7,17 +9,13 @@ import { InputMask } from 'primereact/inputmask';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import { FormEvent, useEffect, useState } from 'react';
-import { fetchUser, createUser, updateUser } from '../api/userService';
 import { FloatLabel } from 'primereact/floatlabel';
+
+import { fetchUser, createUser, updateUser } from '../api/userService';
+import { User, ButtonText, ValidationErrors, ApiError } from '../types/userFormTypes';
 import { validate } from '../utils/utilityFunctions';
 import { genders, bloodGroups, defaultFormData, defaultValidationErrors } from '../utils/utilityVars';
 
-
-
-
-import { User, ButtonText, ValidationErrors, ApiError } from '../types/userFormTypes';
-import { useParams } from 'react-router-dom';
 
 
 export default function UserForm() : JSX.Element {
@@ -58,6 +56,7 @@ export default function UserForm() : JSX.Element {
         }
         return Object.values(errors).some(value => value !== '');
     }
+
     const validateInput = (key: string, value : string | number | Date | null | undefined) => {
         const inputValidationError = validate(key, value);
         if (inputValidationError) {
@@ -66,8 +65,6 @@ export default function UserForm() : JSX.Element {
             setErrors({...errors, [key]: ''})
         }
     }
-
-
 
     const handleInputChange = (key : string, value: string | number | Date | null | undefined) => {
         
@@ -86,27 +83,22 @@ export default function UserForm() : JSX.Element {
         if (buttonText === 'Create User') {
             createUser(formData).then((createdUserData : User | null) => {
                 setFormData(createdUserData);
-            }).catch(() => {
-                console.log("Error creating the user!")
+            }).catch((error : ApiError) => {
+                setApiError(error);
             })
         } else if (buttonText === 'Update User' && userId) {
             updateUser(userId, formData).then((updatedUserData : User | null) => {
                 setFormData(updatedUserData);
-            }).catch(() => {
-                console.log("Error updating the user!")
+            }).catch((error : ApiError) => {
+                setApiError(error);
             })
         }
-        console.log("Form submitted!")
     }
 
-    console.log(formData)
-    console.log("errors", errors)
-
     return <form onSubmit={(e) => handleFormSubmit(e)} className="user-form">
-        <div className="left-container">
+            {/* Personal Information */}
             <div className="form-section">
-                <div style={{display: 'flex', alignItems: 'center', margin: '15px 0'}}><i className='pi pi-user' style={{ color: 'var(--primary-color)', marginRight: '10px' }}></i> <h2>Personal Information</h2></div>
-               
+                <div className='section-header'><i className='pi pi-user' style={{ color: 'var(--primary-color)', marginRight: '10px' }}></i> <h2>Personal Information</h2></div>
 
                 <div className="form-row">
                     <div className='input-container'> 
@@ -135,7 +127,6 @@ export default function UserForm() : JSX.Element {
                 <p className='error'>{errors.email}</p>
                 </div>
 
-
                 <div className="form-row">
                     <div className='input-container'>
                     <FloatLabel>
@@ -156,8 +147,9 @@ export default function UserForm() : JSX.Element {
 
             </div>
 
+            {/* Address */}
             <div className="form-section">
-                <div style={{display: 'flex', alignItems: 'center', margin: '15px 0'}}><i className='pi pi-map-marker' style={{ color: 'var(--primary-color)', marginRight: '10px' }}></i> <h2>Address</h2></div>
+                <div className='section-header'><i className='pi pi-map-marker' style={{ color: 'var(--primary-color)', marginRight: '10px' }}></i> <h2>Address</h2></div>
 
                 <div className='input-container input--wide'>
                 <FloatLabel>
@@ -183,15 +175,12 @@ export default function UserForm() : JSX.Element {
                     </FloatLabel>
                     <p className='error'>{errors.state}</p>
                     </div>
-                </div>
-
-                
+                </div>                
             </div>
-        </div>
 
-        <div className="right-container">
+            {/* Demographics & physical information*/}
             <div className="form-section">
-                <div style={{display: 'flex', alignItems: 'center', margin: '15px 0'}}><i className='pi pi-info-circle' style={{ color: 'var(--primary-color)', marginRight: '10px' }}></i> <h2>Demographics & physical information</h2></div>
+                <div className='section-header'><i className='pi pi-info-circle' style={{ color: 'var(--primary-color)', marginRight: '10px' }}></i> <h2>Demographics & physical information</h2></div>
 
                 <div className="form-row">
                     <div className='input-container'>
@@ -246,9 +235,6 @@ export default function UserForm() : JSX.Element {
                     <p className='error'>{errors.weight}</p>
                     </div>
                 </div>
-                
-            </div>
-
         </div>
 
         <Button type='submit' className='form-button' disabled={checkErrors()}>{buttonText}</Button>
