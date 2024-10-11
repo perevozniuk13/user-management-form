@@ -1,3 +1,5 @@
+import { Nullable } from "primereact/ts-helpers";
+
 export interface User {
     firstName: string,
     lastName: string,
@@ -34,4 +36,14 @@ export interface ValidationErrors {
     state: string
 }
 
+export type InputType = string | number| Date | null | undefined | Nullable<string> | Nullable<Date>
+
 export type ButtonText = 'Create User' | 'Update User';
+
+export type ApiError = {
+    response: {
+        data: {
+            message: string
+        }
+    }
+}
