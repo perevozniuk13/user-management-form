@@ -16,3 +16,22 @@ export interface User {
         state: string
     }
 }
+
+export interface ValidationErrors {
+    firstName: string,
+    lastName: string,
+    email: string,
+    username: string,
+    phone: string,
+    age: string,
+    gender: string,
+    birthDate: string,
+    bloodGroup: string,
+    height: string,
+    weight: string,
+    address: string,
+    city: string,
+    state: string
+}
+
+export type ButtonText = 'Create User' | 'Update User';
