@@ -5,34 +5,98 @@ import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
+import { fetchUser, createUser, updateUser } from '../api/userService';
+import { useNavigate } from 'react-router-dom';
+
+
 
 import { User } from '../types/userFormTypes';
+import { useParams } from 'react-router-dom';
 
-const genders = ['Female', 'Male', 'Other'];
-const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+const genders = [
+    { label: 'Female', value: 'female' },
+    { label: 'Male', value: 'male' },
+    { label: 'Other', value: 'other' }
+];
+
+const bloodGroups = [
+    { label: 'A+', value: 'A+' },
+    { label: 'A-', value: 'A-' },
+    { label: 'B+', value: 'B+' },
+    { label: 'B-', value: 'B-' },
+    { label: 'AB+', value: 'AB+' },
+    { label: 'AB-', value: 'AB-' },
+    { label: 'O+', value: 'O+' },
+    { label: 'O-', value: 'O-' }
+];
+type ButtonText = 'Create User' | 'Update User';
 
 
 export default function UserForm() : JSX.Element {
-    const [formData, setFormData] = useState<User>({
-        firstName: '',
-        lastName: '',
-        email: '',
-        username: '',
-        phone: '',
-        age: 0,
-        gender: '',
-        birthDate: new Date(),
-        bloodGroup: '',
-        height: undefined,
-        weight: undefined,
-        address: {
-            address: '',
-            city: '',
-            state: ''
-        }
+    const { userId } = useParams<{ userId: string }>();
+    const navigate = useNavigate();
 
-    })
+    const [formData, setFormData] = useState<User|null>(null)
+    const [buttonText, setButtonText] = useState<ButtonText>('Create User')
+
+    useEffect(() => {
+        if (userId) {
+            fetchUser(userId).then((data : User) => {
+                setFormData(data);
+                setButtonText('Update User');
+            }).catch(() => {
+                setFormData({
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    username: '',
+                    phone: '',
+                    age: 0,
+                    gender: '',
+                    birthDate: '',
+                    bloodGroup: '',
+                    height: 0,
+                    weight: 0,
+                    address: {
+                        address: '',
+                        city: '',
+                        state: ''
+                    }
+            
+                });
+                navigate('/');
+            });
+        } else {
+            setFormData({
+                firstName: '',
+                lastName: '',
+                email: '',
+                username: '',
+                phone: '',
+                age: 0,
+                gender: '',
+                birthDate: '',
+                bloodGroup: '',
+                height: 0,
+                weight: 0,
+                address: {
+                    address: '',
+                    city: '',
+                    state: ''
+                }
+        
+            })
+        }
+    }, [])
+
+    if (!formData) {
+        return <>Loading...</>
+    }
+
+    console.log("snksnj", formData.birthDate);
+    console.log("snksnj 3", typeof formData.birthDate);
+
 
     const handleInputChange = (key : string, value: string | number | Date | null | undefined) => {
         console.log(key)
@@ -45,6 +109,19 @@ export default function UserForm() : JSX.Element {
 
     const handleFormSubmit = (e : FormEvent) => {
         e.preventDefault();
+        if (buttonText === 'Create User') {
+            createUser(formData).then((createdUserData : User) => {
+                setFormData(createdUserData);
+            }).catch(() => {
+                console.log("Error creating the user!")
+            })
+        } else if (buttonText === 'Update User' && userId) {
+            updateUser(userId, formData).then((updatedUserData : User) => {
+                setFormData(updatedUserData);
+            }).catch(() => {
+                console.log("Error updating the user!")
+            })
+        }
         console.log("Form submitted!")
     }
 
@@ -87,13 +164,13 @@ export default function UserForm() : JSX.Element {
 
                 <div className="form-row">
                     <Dropdown value={formData.gender} onChange={(e) => handleInputChange('gender', e.target.value)} placeholder='Gender' options={genders}/>
-                    <Calendar value={formData.birthDate} onChange={(e) => handleInputChange('birthDate', e.value)} dateFormat="dd/mm/yy" placeholder='dd/mm/yy'/>
-                    <InputNumber value={formData.age} onValueChange={(e) => handleInputChange('age', e.value)}  placeholder='Age'/>
+                    <Calendar value={formData.birthDate ? new Date(formData.birthDate) : null} onChange={(e) => handleInputChange('birthDate', e.value)} dateFormat="yy-mm-dd" placeholder='yyyy-mm-dd'/>
+                    <InputNumber value={formData.age || null} onValueChange={(e) => handleInputChange('age', e.value)}  placeholder='Age'/>
                 </div>
 
                 <div className="form-row">
-                    <InputNumber value={formData.height} onValueChange={(e) => handleInputChange('height', e.value)}  placeholder='Height' suffix=' cm'/>
-                    <InputNumber value={formData.weight} onValueChange={(e) => handleInputChange('weight', e.value)} placeholder='Weight' suffix=' kg'/>
+                    <InputNumber value={formData.height || null} onValueChange={(e) => handleInputChange('height', e.value)}  placeholder='Height' suffix=' cm'/>
+                    <InputNumber value={formData.weight || null} onValueChange={(e) => handleInputChange('weight', e.value)} placeholder='Weight' suffix=' kg'/>
                     <Dropdown value={formData.bloodGroup} onChange={(e) => handleInputChange('bloodGroup', e.target.value)}  placeholder='Blood Group' options={bloodGroups}/>
                 </div>
                 
@@ -101,6 +178,6 @@ export default function UserForm() : JSX.Element {
 
         </div>
 
-        <Button type='submit'>Submit</Button>
+        <Button type='submit'>{buttonText}</Button>
     </form>
 }

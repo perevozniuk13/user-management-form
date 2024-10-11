@@ -6,10 +6,10 @@ export interface User {
     phone: string,
     age: number,
     gender: string,
-    birthDate: Date,
+    birthDate: string,
     bloodGroup: string,
-    height: number | undefined,
-    weight: number | undefined,
+    height: number,
+    weight: number,
     address: {
         address: string,
         city: string,
